@@ -12,7 +12,7 @@ from keras.metrics import Precision, Recall
 import shutil
 
 # Paths
-DATASET_PATH = "path_to_dataset"  # Replace with the actual path
+DATASET_PATH = "fakevsrealart/Real_AI_SD_LD_Dataset"  # Replace with the actual path
 TRAIN_PATH = os.path.join(DATASET_PATH, "train")
 TEST_PATH = os.path.join(DATASET_PATH, "test")
 
