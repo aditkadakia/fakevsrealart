@@ -1,8 +1,14 @@
 import tensorflow as tf
 from keras.layers import \
        Conv2D, MaxPool2D, Dropout, Flatten, Dense
+import tensorflow as tf
+from keras.models import Model
+from keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from keras.applications import ResNet50
+from preprocess import preprocess_data
 
 
+#make own hp class
 
 class YourModel(tf.keras.Model):
     """ Your own neural network model. """
@@ -12,7 +18,7 @@ class YourModel(tf.keras.Model):
     
         self.optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001)
         self.architecture = [
-              Conv2D(filters=8, kernel_size=(3, 3), activation='relu', input_shape=(hp.img_size, hp.img_size, 1)),
+              Conv2D(filters=8, kernel_size=(3, 3), activation='relu', input_shape=(128, 128, 1)),
               MaxPool2D(pool_size=(2, 2)),
               Dropout(0.2),
               Conv2D(filters=16, kernel_size=(3, 3), activation='relu'),
@@ -67,95 +73,60 @@ class YourModel(tf.keras.Model):
         return tf.keras.losses.SparseCategoricalCrossentropy()(labels, predictions)
 
 
-class VGGModel(tf.keras.Model):
-    def __init__(self):
-        super(VGGModel, self).__init__()
+class ResNetModel(tf.keras.Model):
+    def create_resnet_model(input_shape):
 
-        # TASK 3
-        # TODO: Select an optimizer for your network (see the documentation
-        #       for tf.keras.optimizers)
+        base_model = ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
 
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001)
+        # Freeze the base model layers (prevent updates during training)
+        base_model.trainable = False
 
-        # Don't change the below:
+        # Add custom layers for binary classification
+        x = base_model.output
+        x = GlobalAveragePooling2D()(x)
+        x = Dense(128, activation="relu")(x)
+        x = Dropout(0.5)(x)
+        output = Dense(1, activation="sigmoid")(x)  # Binary classification (AI or Human)
 
-        self.vgg16 = [
-            # Block 1
-            Conv2D(64, 3, 1, padding="same",
-                   activation="relu", name="block1_conv1"),
-            Conv2D(64, 3, 1, padding="same",
-                   activation="relu", name="block1_conv2"),
-            MaxPool2D(2, name="block1_pool"),
-            # Block 2
-            Conv2D(128, 3, 1, padding="same",
-                   activation="relu", name="block2_conv1"),
-            Conv2D(128, 3, 1, padding="same",
-                   activation="relu", name="block2_conv2"),
-            MaxPool2D(2, name="block2_pool"),
-            # Block 3
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv1"),
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv2"),
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv3"),
-            MaxPool2D(2, name="block3_pool"),
-            # Block 4
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv1"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv2"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv3"),
-            MaxPool2D(2, name="block4_pool"),
-            # Block 5
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv1"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv2"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv3"),
-            MaxPool2D(2, name="block5_pool")
-        ]
+        # Create the model
+        model = Model(inputs=base_model.input, outputs=output)
 
-        # TASK 3
-        # TODO: Make all layers in self.vgg16 non-trainable. This will freeze the
-        #       pretrained VGG16 weights into place so that only the classificaiton
-        #       head is trained.
+        return model
+    
+    def train_model():
+        # Preprocess the data
+        train_generator, test_generator = preprocess_data()
 
-        for layer in self.vgg16.layers:
-            layer.trainable = False
+        # Define input shape
+        input_shape = (128, 128, 3)
 
-        # TODO: Write a classification head for our 15-scene classification task.
+        # Create the ResNet model
+        model = create_resnet_model(input_shape)
 
-        self.head = tf.keras.Sequential([
-              Flatten(),
-            Dense(256, activation='relu'),
-            Dense(15, activation='softmax')
-        ], name="vgg_head")
+        # Compile the model
+        model.compile(
+            optimizer="adam",
+            loss="binary_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        # Train the model
+        model.fit(
+            train_generator,
+            validation_data=test_generator,
+            epochs=10,
+            verbose=1,
+        )
+
+        # Save the trained model
+        model.save("art_classifier_resnet.h5")
+        print("Model saved as art_classifier_resnet.h5")
 
 
-        # Don't change the below:
-        self.vgg16 = tf.keras.Sequential(self.vgg16, name="vgg_base")
-        self.head = tf.keras.Sequential(self.head, name="vgg_head")
-
-    def call(self, x):
-        """ Passes the image through the network. """
-
-        x = self.vgg16(x)
-        x = self.head(x)
-
-        return x
 
     @staticmethod
     def loss_fn(labels, predictions):
         """ Loss function for model. """
-
-        # TASK 3
-        # TODO: Select a loss function for your network (see the documentation
-        #       for tf.keras.losses)
-        #       Read the documentation carefully, some might not work with our 
-        #       model!
 
         cce = tf.keras.losses.SparseCategoricalCrossentropy()
         return cce(labels, predictions)
