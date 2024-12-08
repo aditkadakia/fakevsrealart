@@ -74,7 +74,7 @@ class YourModel(tf.keras.Model):
 
 
 class ResNetModel(tf.keras.Model):
-    def create_resnet_model(input_shape):
+    def create_resnet_model(self, input_shape):
 
         base_model = ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
 
@@ -93,7 +93,7 @@ class ResNetModel(tf.keras.Model):
 
         return model
     
-    def train_model():
+    def train_model(self):
         # Preprocess the data
         train_generator, test_generator = preprocess_data()
 
@@ -101,7 +101,7 @@ class ResNetModel(tf.keras.Model):
         input_shape = (128, 128, 3)
 
         # Create the ResNet model
-        model = create_resnet_model(input_shape)
+        model = self.create_resnet_model(input_shape)
 
         # Compile the model
         model.compile(
