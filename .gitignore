@@ -1,4 +1,6 @@
 Real_AI_SD_LD_Dataset/
+restructured_test/
+restructured_train/
 
 __pycache__/
 *.py[cod]

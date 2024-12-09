@@ -13,15 +13,9 @@ import shutil
 import os
 
 # Paths
-<<<<<<< HEAD
-DATASET_PATH = "Real_AI_SD_LD_Dataset"  # Replace with the actual path
-TRAIN_PATH = os.path.join(DATASET_PATH, "train")
-TEST_PATH = os.path.join(DATASET_PATH, "test")
-=======
 # DATASET_PATH = "fakevsrealart/Real_AI_SD_LD_Dataset"  # Replace with the actual path
 # TRAIN_PATH = os.path.join(DATASET_PATH, "train")
 # TEST_PATH = os.path.join(DATASET_PATH, "test")
->>>>>>> bb94bab5151a6ec0fac817f62197ce8c7f01dc51
 
 IMAGE_SIZE = (128, 128)  # Resize images to 128x128
 BATCH_SIZE = 32
@@ -59,7 +53,7 @@ BATCH_SIZE = 32
 
 #     return train_generator, validation_generator, test_generator
 
-DATASET_PATH = "fakevsrealart/Real_AI_SD_LD_Dataset"
+DATASET_PATH = "Real_AI_SD_LD_Dataset"
 TRAIN_PATH = os.path.join(DATASET_PATH, "train")
 TEST_PATH = os.path.join(DATASET_PATH, "test")
 
@@ -71,6 +65,9 @@ def restructure_dataset(source_dir, target_dir):
 
     for class_dir in os.listdir(source_dir):
         class_path = os.path.join(source_dir, class_dir)
+
+        if not os.path.isdir(class_path):
+            continue
 
         # Check if it's an AI class or Human class
         if "AI_" in class_dir:
