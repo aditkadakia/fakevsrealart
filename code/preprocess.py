@@ -20,27 +20,37 @@ IMAGE_SIZE = (128, 128)  # Resize images to 128x128
 BATCH_SIZE = 32
 
 def preprocess_data():
-    # Initialize data generators
-    datagen = ImageDataGenerator(rescale=1.0 / 255.0)
+    datagen = ImageDataGenerator(
+        rescale=1.0 / 255.0,
+        validation_split=0.2  # Reserve 20% for validation
+    )
 
     train_generator = datagen.flow_from_directory(
         TRAIN_PATH,
         target_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
-        class_mode="binary",  # Binary classification
+        class_mode="categorical",  # Multi-class classification
+        subset="training",
     )
 
-    test_generator = datagen.flow_from_directory(
+    validation_generator = datagen.flow_from_directory(
+        TRAIN_PATH,
+        target_size=IMAGE_SIZE,
+        batch_size=BATCH_SIZE,
+        class_mode="categorical",  # Multi-class classification
+        subset="validation",
+    )
+
+    test_generator = ImageDataGenerator(rescale=1.0 / 255.0).flow_from_directory(
         TEST_PATH,
         target_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
-        class_mode="binary",
+        class_mode="categorical",  # Multi-class classification
     )
 
-    return train_generator, test_generator
+    print("Class Indices:", train_generator.class_indices)
 
-if __name__ == "__main__":
-    preprocess_data()
+    return train_generator, validation_generator, test_generator
 
 
 

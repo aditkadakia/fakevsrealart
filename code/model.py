@@ -50,46 +50,44 @@ class ResNetModel(tf.keras.Model):
     def create_resnet_model(self, input_shape):
         base_model = ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
 
-        # Freeze the base model layers (prevent updates during training)
+        # Freeze the base model layers
         base_model.trainable = False
 
-        # Add custom layers for binary classification
+        # Add custom layers for multi-class classification
         x = base_model.output
         x = GlobalAveragePooling2D()(x)
         x = Dense(128, activation="relu")(x)
         x = Dropout(0.5)(x)
-        output = Dense(1, activation="sigmoid")(x)  # Binary classification (AI or Human)
+        output = Dense(30, activation="softmax")(x)  # Multi-class classification (30 classes)
 
         # Create the model
         model = Model(inputs=base_model.input, outputs=output)
         return model
 
     def train_model(self):
-        # Preprocess the data
-        train_generator, test_generator = preprocess_data()
+        train_generator, validation_generator, test_generator = preprocess_data()
 
-        # Define input shape
+        # Create the model
         input_shape = (128, 128, 3)
-
-        # Create the ResNet model
         model = self.create_resnet_model(input_shape)
 
         # Compile the model
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-            loss=tf.keras.losses.BinaryCrossentropy(),  # Binary cross-entropy
+            loss=tf.keras.losses.CategoricalCrossentropy(),  # Multi-class cross-entropy
             metrics=["accuracy"],
         )
 
         # Train the model
         model.fit(
             train_generator,
-            validation_data=test_generator,
+            validation_data=validation_generator,
             epochs=10,
             verbose=1,
         )
 
-        # Save the trained model
-        model.save("art_classifier_resnet.h5")
-        print("Model saved as art_classifier_resnet.h5")
+        # Save the model
+        model.save("art_classifier_resnet_multiclass.h5")
+        print("Model saved as art_classifier_resnet_multiclass.h5")
+
 
