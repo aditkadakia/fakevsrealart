@@ -6,7 +6,8 @@ from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from keras.applications import ResNet50
 from preprocess import preprocess_data
-
+from preprocess import restructure_dataset
+from keras.preprocessing.image import ImageDataGenerator
 
 #make own hp class
 
@@ -49,6 +50,7 @@ class YourModel(tf.keras.Model):
 
 class ResNetModel(tf.keras.Model):
     def create_resnet_model(self, input_shape):
+        # Load ResNet50 pre-trained on ImageNet
         base_model = ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
 
         # Freeze the base model layers
@@ -66,9 +68,47 @@ class ResNetModel(tf.keras.Model):
         return model
 
     def train_model(self):
-        train_generator, validation_generator, test_generator = preprocess_data()
+        # Define paths and preprocessing parameters
+        TRAIN_PATH = "restructured_train"
+        TEST_PATH = "restructured_test"
+        IMAGE_SIZE = (128, 128)
+        BATCH_SIZE = 32
 
-        # Create the model
+        # Initialize ImageDataGenerator
+        datagen = ImageDataGenerator(
+            rescale=1.0 / 255.0,
+            validation_split=0.2  # Reserve 20% of training data for validation
+        )
+
+        # Create training and validation generators
+        train_generator = datagen.flow_from_directory(
+            TRAIN_PATH,
+            target_size=IMAGE_SIZE,
+            batch_size=BATCH_SIZE,
+            class_mode="binary",  # Binary classification
+            subset="training",
+        )
+
+        validation_generator = datagen.flow_from_directory(
+            TRAIN_PATH,
+            target_size=IMAGE_SIZE,
+            batch_size=BATCH_SIZE,
+            class_mode="binary",  # Binary classification
+            subset="validation",
+        )
+
+        # Create test generator
+        test_generator = ImageDataGenerator(rescale=1.0 / 255.0).flow_from_directory(
+            TEST_PATH,
+            target_size=IMAGE_SIZE,
+            batch_size=BATCH_SIZE,
+            class_mode="binary",  # Binary classification
+        )
+
+        # Print class indices for debugging
+        print("Class Indices:", train_generator.class_indices)
+
+        # Create the ResNet model
         input_shape = (128, 128, 3)
         model = self.create_resnet_model(input_shape)
 
@@ -87,7 +127,7 @@ class ResNetModel(tf.keras.Model):
             verbose=1,
         )
 
-        # Save the model
+        # Save the trained model
         model.save("art_classifier_resnet_binary.h5")
         print("Model saved as art_classifier_resnet_binary.h5")
 
