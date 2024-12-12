@@ -123,7 +123,7 @@ class ResNetModel(tf.keras.Model):
         model.fit(
             train_generator,
             validation_data=validation_generator,
-            epochs=25,
+            epochs=50,
             verbose=1,
         )
 
