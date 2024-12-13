@@ -1,0 +1,225 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CSCI 1430 Written Question Template
+%
+% This is a LaTeX document. LaTeX is a markup language for producing documents.
+% Your task is to answer the questions by filling out this document, then to
+% compile this into a PDF document.
+%
+% TO COMPILE:
+% > pdflatex thisfile.tex
+
+% If you do not have LaTeX, your options are:
+% - VSCode extension: https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop
+% - Online Tool: https://www.overleaf.com/ - most LaTeX packages are pre-installed here (e.g., \usepackage{}).
+% - Personal laptops (all common OS): http://www.latex-project.org/get/ 
+%
+% If you need help with LaTeX, please come to office hours.
+% Or, there is plenty of help online:
+% https://en.wikibooks.org/wiki/LaTeX
+%
+% Good luck!
+% The CSCI 1430 staff
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% How to include two graphics on the same line:
+% 
+% \includegraphics[width=0.49\linewidth]{yourgraphic1.png}
+% \includegraphics[width=0.49\linewidth]{yourgraphic2.png}
+%
+% How to include equations:
+%
+% \begin{equation}
+% y = mx+c
+% \end{equation}
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+ 
+% \usepackage{cvpr.sty}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{indentfirst}
+
+% From https://ctan.org/pkg/matlab-prettifier
+\usepackage[numbered,framed]{matlab-prettifier}
+
+\frenchspacing
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\cvprfinalcopy
+\def\cvprPaperID{****}
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+\ifcvprfinal\pagestyle{empty}
+\setlength{\parindent}{15pt}
+
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{CSCI 1430 Final Project Report:\\Detecting AI-Generated Fine Art}
+
+% Make this document not anonymous
+\author{
+    \emph{Team name}: Swaraj, Adit, Taleena, Sekai\\
+    \emph{TA name:} Noah Rousell \\
+    Brown University\\
+}
+
+\maketitle
+%\thispagestyle{empty}
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+\par This project aims to classify fine art pieces as AI-generated or human-generated using a convolutional neural network (CNN). We trained our CNN using a dataset of over 180,000 images representing a diverse array of art styles, including art nouveau, baroque, expressionism, impressionism, post-impressionism, realism, renaissance, romanticism, surrealism, and ukiyo-e. The dataset includes images created by human artists, AI-generated images produced through Stable Diffusion, and additional AI artworks generated using traditional learning and development methods. Our CNN leverages ResNet50, a pre-trained model used for binary classification tasks. The model uses transfer learning to distinguish between human and AI-generated art. We implemented various data augmentation techniques to improve the model's robustness and prevent overfitting during training.
+\end{abstract}
+
+
+% \section{Project Report Advice [Delete This Section]}
+
+% \begin{enumerate}
+%     \item Overriding principle: show us your effort.
+%     \item If you wish us to consider any aspect of your project, it should be presented here. \item Please include a problem statement, related work, your method, your results (figures! tables!), any comparison to existing techniques, and references. 
+%     \item If you made something work---great! If you didn't quite make it work---tell us about the problems, why you think it didn't work, and what you would do to fix it.
+%     \item Length: Approximately four pages for techical description. For social impact, no more than one page total.
+%     \item Please include an appendix to the report which details what each team member contributed to the project. One paragraph max each.
+%     \item Any other materials should go in an appendix.
+% \end{enumerate}
+
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+
+\par Counterfeiting and forgery are not new issues in fine art. With the advent of generative AI technologies, a new dimension has been added to an already serious problem. AI models, like Stable Diffusion, can produce high-quality images that closely replicate a variety of art styles. In many cases, generated images are nearly indistinguishable from hand-made pieces. This raises questions about more than authenticity; authorship and originality in art are also called into question now that humans can create "art" with the click of a button. 
+\\
+\par As generative AI continues to improve, so must the methods by which we identify AI-generated artwork. This project attempts to tackle these modern challenges by developing a CNN capable of detecting AI-generated vs human fine art pieces with a high accuracy. By training our CNN on a dataset that includes images of human, stable diffusion, and learning and development-generated fine art across 10 categories, we aim to create a robust classification model that adapts to the nuances of human and AI artistry across genres. 
+\\
+\par Successfully addressing these issues has a profound implication on the world of fine art. We are not concerned with the existence of AI art or its place in fine art, however, we do believe that feats of human creativity will be devalued without a consistent way of detecting AI artwork. As we refine the way we detect AI-generated images we can protect the integrity of art, the integrity of the art market, and most importantly, the integrity of the artist.
+
+
+\section{Related Work}
+\par In the past year, two notable projects from universities have emerged that utilize AI to detect fake artwork. The first project, conducted by a research team at the University of Oregon, focused specifically on authenticating Jackson Pollock paintings. Led by Professor Richard Taylor, the team trained a neural network using approximately 600 images, including authentic Pollock paintings, imitations, and unrelated abstract works. Their model achieved an impressive accuracy of 98.9\% by analyzing the fractal elements characteristic of Pollock's style\footnote{Smith JH, Holt C, Smith NH, Taylor RP (2024) Using machine learning to distinguish between authentic and imitation Jackson Pollock poured paintings: A tile-driven approach to computer vision. PLOS ONE 19(6): e0302962. https://doi.org/10.1371/journal.pone.0302962}.
+\\
+\par Additionally, researchers at the University of Zurich employed EfficientNet and Kolmogorov Arnold Networks (KAN) models to detect forgeries attributed to the famous forger Wolfgang Beltracchi\footnote{Schaerf, L., Ostmeyer, J., Buividovich, P., Charles, T., Postma, E., & Popovici, C. (2024). Art Forgery Detection using Kolmogorov Arnold and Convolutional Neural Networks. arXiv. Retrieved from https://arxiv.org/abs/2410.04866}. The team trained a multiclass image classification model on images of Beltracchi's forgeries alongside paintings from artists whose styles he replicated. The EfficientNet model achieved a classification accuracy of 77.4\% when applying entropy measures greater than 2.5 or blur filtering, while the KAN model reached an accuracy of 52.8\% with a grid size of 128\|84\|12.
+\\
+\par While both the University of Oregon and the University of Zurich researchers use CNNs for art forgery detection, their approaches target specific artists or forgers. In contrast, our project aims to create a generalized CNN capable of classifying a diverse range of artworks across genres. By training our model on a broad dataset that encompasses various artistic styles and sources, we seek to develop a robust classification system that addresses the contemporary challenges posed by generative AI technologies.
+
+\section{Method}
+
+\subsection{Problem Statement}
+\par The rise in generative AI has made it increasingly challenging to distinguish between human and AI-generated fine art. As this technology becomes increasingly sophisticated, the potential for counterfeit, misappropriated, and misrepresented art grows, increasing the need for a robust method of detecting the origin of art.
+
+\subsection{Approach}
+\par To address this problem we built a CNN that leverages ResNet50, a model pre-trained on ImageNet. We train this model on a comprehensive dataset that includes images from a variety of origins: human-created artworks, AI-generated images produced by Stable Diffusion, and AI-generated images generated through traditional learning and development methods.
+
+\subsection{Model Architecture}
+\par Our CNN is built using ResNet50, which was recommended by our project advisor. The model begins with an input later that accepts rgb images resized to 128 by 128 pixels. It then uses 50 convolutional layers to extract features and residual blocks with skip connectors to minimize the vanishing gradient effect. After feature extraction, a global average pooling layer preserves important spatial information while reducing the dimensionality of the feature maps. Finally, fully connected dense layers classify the extracted features. The output layer is a single neuron with a sigmoid activation function that classifies images as AI or human.
+
+\begin{lstlisting}[style=Matlab-editor]
+class ResNetModel(tf.keras.Model):
+    def create_resnet_model(self, input_shape):
+        base_model = ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
+        base_model.trainable = False
+        x = base_model.output
+        x = GlobalAveragePooling2D()(x)
+        x = Dense(128, activation="relu")(x)
+        x = Dropout(0.5)(x)
+        output = Dense(1, activation="sigmoid")(x)  
+        model = Model(inputs=base_model.input, outputs=output)
+        return model
+\end{lstlisting}
+
+\subsection{Preprocessing}
+\par We use Keras's ImageDataGenerator to pre-process the training data by rescaling pixel values to a range of [0, 1]. The images are then organized into "AI" and "Human" folders so the model can learn from these binary categories.
+\begin{lstlisting}[style=Matlab-editor]
+def restructure_dataset(source_dir, target_dir):
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+        os.makedirs(os.path.join(target_dir, "AI"))
+        os.makedirs(os.path.join(target_dir, "Human"))
+
+    for class_dir in os.listdir(source_dir):
+        class_path = os.path.join(source_dir, class_dir)
+        if "AI_" in class_dir:
+            dest_dir = os.path.join(target_dir, "AI")
+        else:
+            dest_dir = os.path.join(target_dir, "Human")
+        for file in os.listdir(class_path):
+            src_file = os.path.join(class_path, file)
+            dest_file = os.path.join(dest_dir, file)
+            shutil.copy(src_file, dest_file)
+\end{lstlisting}
+
+\subsection{Training}
+\par For training, we use a traditional 80-20 train-test split for our data, where 80\% of the images are used for training and 20\% for testing. The model is compiled with an Adam optimizer and binary cross-entropy loss function to optimize performance in binary classification tasks.
+
+
+
+\section{Results: TODO}
+
+Present the results of the changes. Include code snippets (just interesting things), figures (Figures \ref{fig:result1} and \ref{fig:result2}), and tables (Table \ref{tab:example}). Assess computational performance, accuracy performance, etc. Further, feel free to show screenshots, images; videos will have to be uploaded separately to Gradescope in a zip. Use whatever you need.
+
+
+
+
+%-------------------------------------------------------------------------
+\subsection{Technical Discussion: TODO}
+
+What about your method raises interesting questions? Are there any trade-offs? What is the right way to think about the changes that you made?
+
+\subsection{Existing Techniques}
+\begin{itemize}
+    \item[1.] \textbf{Convolution Neural Networks: }CNNs are a core part of image classification tasks, like the art classification we do in this project. Using convolutional layers, they extract features from images, which allows models to learn complex patterns like specific art styles or common trends found in AI art. Our project uses a CNN based on ResNet50, which is known for it's accurate image classification.
+    \item[2.] \textbf{Binary Classification: } Binary classification is another fundamental aspect of image classification where images are categorized into one of two classes based off image features. This technique is particularly relevant when trying to distinguish between AI and non-AI generated images. It has also been applied successfully to medical imaging to help detect physical anomalies showing it's versatility as an image classifier.
+    \item[3.] \textbf{Transfer Learning: }Transfer learning adapts pre-trained models for specific classification tasks. This technique allows the model to benefit from previously learned features. In our project, we use ResNet50, which is trained on ImageNet. By leveraging ResNet50, we are able to improve our own model's accuracy and reduce its training time while focusing on the specific task of classifying images of fine art as human or AI-generated.
+\end{itemize}
+
+
+%------------------------------------------------------------------------
+\section{Conclusion}
+
+\par During this project, we developed a CNN to classify fine art as either human or AI-generated. By leveraging transfer learning through ResNet50, we trained our model on a diverse set of fine art images across ten genres: art nouveau, baroque, expressionism, impressionism, post-impressionism, realism, renaissance, romanticism, surrealism, and ukiyo-e. After training, our model produced a classification accuracy of 80.54\% across art styles demonstrating a strong ability to distinguish between human and AI artwork regardless of the style of art. 
+\\
+\par This work is significant in the context of the growing prevalence of generative AI in art. As AI continues to improve it's replication of human art and it's generation of art, identifying the origin of a piece becomes crucial for individuals and institutions. Our project, while rudimentary, shows that the use of deep learning techniques for generalized art classification problems remains a promising avenue for preserving the integrity of art.
+\\
+\par This project opens several avenues for continued experimentation, including testing fine art classification accuracy for various deep learning models and improving the current model accuracy to correctly classify AI vs human artwork, regardless of art style, at upwards of 95\%. The use case for this type of solution is wide, ranging from artists, collectors, museums, auctions, academics and beyond. Ultimately, the goal of our project is not to hinder the development of AI art but to ensure the continuation of human art as we have understood it until present day.
+
+
+{\small
+\bibliographystyle{plain}
+\bibliography{ProjectFinal_ProjectReportTemplate} 
+\textbf{Adit Whatever you used for resnet or something general} \\
+\\
+Smith JH, Holt C, Smith NH, Taylor RP (2024) Using machine learning to distinguish between authentic and imitation Jackson Pollock poured paintings: A tile-driven approach to computer vision. PLOS ONE 19(6): e0302962. https://doi.org/10.1371/journal.pone.0302962 \\
+\\
+Schaerf, L., Ostmeyer, J., Buividovich, P., Charles, T., Postma, E., & Popovici, C. (2024). Art Forgery Detection using Kolmogorov Arnold and Convolutional Neural Networks. arXiv. Retrieved from https://arxiv.org/abs/2410.04866
+
+}
+
+\section*{Appendix}
+
+\subsection*{Team contributions: TODO}
+
+Please describe in one paragraph per team member what each of you contributed to the project.
+\begin{description}
+\item SATS: This project was highly collaborative with much of the work being done together as a group, including programming.
+
+\item Sekai: 
+\item Taleena: 
+\item Adit: 
+\item Swaraj: 
+\end{description}
+
+\end{document}
